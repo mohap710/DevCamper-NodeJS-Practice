@@ -1,25 +1,78 @@
-export function getBootcamps(request, response, next) {
-    response
+import Bootcamp from '../models/Bootcamps.js';
+import colors from 'colors'
+
+export async function getBootcamps(_request, response, next) {
+    try{
+        const bootcamps = await Bootcamp.find();
+        response
         .status(200)
-        .json({ success: true, msg: `Show all bootcamps` })
+        .json({ success: true, count:bootcamps.length,data: bootcamps  })
+    } catch(error){
+        response.status(204).json({ success: false })
+    }
 }
-export function getSingleBootcamps(request, response, next) {
-    response
-        .status(200)
-        .json({ success: true, msg: `Show bootcamps with the id of ${request.params.id}` })
+
+export async function getSingleBootcamps(request, response, next) {
+    try {
+        const bootcamp = await Bootcamp.findById(request.params.id)
+        response
+            .status(200)
+            .json({ success: true, data: bootcamp })
+    } catch (error) {
+        response.status(204).json({ success : false })
+    }
+    
 }
-export function createNewBootcamps(request, response, next) {
-    response
-        .status(200)
-        .json({ success: true, msg: `Create new bootcamp` })
+
+export async function createNewBootcamps (request, response, next) {
+    try {
+        const bootcamp = await Bootcamp.create(request.body)  
+        response.status(201).json({ success: true, data: bootcamp })
+    } catch (error) {
+        response.status(400).json({
+            success : false,
+            msg: error.message
+        })
+    }
 }
-export function updateBootcamps(request, response, next) {
-    response
-        .status(200)
-        .json({ success: true, msg: `updated bootcamp with id of ${request.params.id}` })
+
+export async function updateBootcamps(request, response, next) {
+    try {
+        const bootcamp = await Bootcamp.findByIdAndUpdate(request.params.id, request.body,{
+            new :true,
+            runValidators : true
+        })
+        if(!bootcamp){
+            return response
+                .status(204)
+                .json({ success: false })
+        }
+        response
+            .status(200)
+            .json({ success: true, data: bootcamp })
+    } catch (error) {
+        response
+            .status(400)
+            .json({ success: false, message: error.message })    
+    }
+    
 }
-export function deleteBootcamps(request, response, next) {
-    response
-        .status(200)
-        .json({ success: true, msg: `deleted bootcamp with id of ${request.params.id}` })
+
+export async function deleteBootcamps(request, response, next) {
+    try {
+        const bootcamp = await Bootcamp.findByIdAndDelete(request.params.id)
+        if(!bootcamp){
+            return response
+                .status(204)
+                .json({ success: false, msg: `No such bootcamp with the id of ${request.params.id}` })  
+        }
+        response
+            .status(200)
+            .json({ success: true, msg: `deleted bootcamp with id of ${request.params.id}` })
+    } catch (error) {
+        response
+            .status(400)
+            .json({ success: false, msg: error.message })
+    }
+    
 }
