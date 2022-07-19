@@ -1,6 +1,8 @@
 import Bootcamp from '../models/Bootcamps.js';
-import colors from 'colors'
-
+import { ErrorResponse } from '../utils/errorResponse.js';
+// @desc      Get all bootcamps
+// @route     GET /bootcamps
+// @access    Public
 export async function getBootcamps(_request, response, next) {
     try{
         const bootcamps = await Bootcamp.find();
@@ -12,18 +14,36 @@ export async function getBootcamps(_request, response, next) {
     }
 }
 
+// @desc      Get all bootcamps
+// @route     GET /bootcamps/:id
+// @access    Public
 export async function getSingleBootcamps(request, response, next) {
     try {
         const bootcamp = await Bootcamp.findById(request.params.id)
+        if(!bootcamp){
+            return next(
+              new ErrorResponse(
+                404,
+                `Bootcamp with the id of ${request.params.id} Not found`
+              )
+            );
+        }
         response
             .status(200)
             .json({ success: true, data: bootcamp })
     } catch (error) {
-        response.status(204).json({ success : false })
+        next(
+          new ErrorResponse(404,
+            `Bootcamp with the id of ${request.params.id} Not found`
+          )
+        );
     }
     
 }
 
+// @desc      Create A new bootcamp
+// @route     POST /bootcamps
+// @access    Private
 export async function createNewBootcamps (request, response, next) {
     try {
         const bootcamp = await Bootcamp.create(request.body)  
@@ -36,6 +56,9 @@ export async function createNewBootcamps (request, response, next) {
     }
 }
 
+// @desc      Update A bootcamp
+// @route     PUT /bootcamps
+// @access    Private
 export async function updateBootcamps(request, response, next) {
     try {
         const bootcamp = await Bootcamp.findByIdAndUpdate(request.params.id, request.body,{
@@ -58,6 +81,9 @@ export async function updateBootcamps(request, response, next) {
     
 }
 
+// @desc      DELETE A bootcamp
+// @route     DELETE /bootcamps
+// @access    Private
 export async function deleteBootcamps(request, response, next) {
     try {
         const bootcamp = await Bootcamp.findByIdAndDelete(request.params.id)
