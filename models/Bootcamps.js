@@ -1,4 +1,6 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
+import slugify from "slugify";
+import { geocoder } from "../utils/geocoder.js"
 
 const BootcampSchema = new mongoose.Schema({
     name: {
@@ -50,7 +52,7 @@ const BootcampSchema = new mongoose.Schema({
             required: false,
             index : '2dsphere'
         },
-        formattedAdress:String,
+        formattedAddress:String,
         street:String,
         city:String,
         state:String,
@@ -101,4 +103,30 @@ const BootcampSchema = new mongoose.Schema({
     },
 })
 
+// Mongoose Middlewares ( Hooks )
+// 1. Create a Slug
+BootcampSchema.pre("save",function(next){
+    this.slug = slugify(this.name,{ lower:true })
+    next()
+})
+
+// 2. extract geo-location from string address
+
+BootcampSchema.pre("save",async function(next){
+    const loc = await geocoder.geocode(this.address)
+    this.location = {
+      type: {
+        type: "Point",
+      },
+      coordinates: [loc[0].longitude, loc[0].latitude],
+      formattedAddress: loc[0].formattedAddress,
+      street: loc[0].streetName,
+      city: loc[0].city,
+      state: loc[0].stateCode,
+      zipcode: loc[0].zipcode,
+      country: loc[0].countryCode,
+    };
+    this.address = undefined
+    next()
+})
 export default mongoose.model("Bootcamp",BootcampSchema)
