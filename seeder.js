@@ -16,7 +16,7 @@ dotenv.config({ path: "./config/config.env" });
 
 // Load MongoDB models
 import Bootcamp from "./models/Bootcamp.js";
-import Course from "./models/Courses.js";
+import Course from "./models/Course.js";
 
 // Connect to DB
 mongoose.connect(process.env.MONGO_URI, {
