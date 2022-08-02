@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import slugify from "slugify";
+import colors from "colors";
 import { geocoder } from "../utils/geocoder.js"
 
 const BootcampSchema = new mongoose.Schema({
@@ -101,6 +102,9 @@ const BootcampSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
+},{
+    toJSON: { virtuals:true },
+    toObject: { virtuals:true }
 })
 
 // Mongoose Middlewares ( Hooks )
@@ -112,21 +116,40 @@ BootcampSchema.pre("save",function(next){
 
 // 2. extract geo-location from string address
 
-BootcampSchema.pre("save",async function(next){
-    const loc = await geocoder.geocode(this.address)
-    this.location = {
-      type: {
-        type: "Point",
-      },
-      coordinates: [loc[0].longitude, loc[0].latitude],
-      formattedAddress: loc[0].formattedAddress,
-      street: loc[0].streetName,
-      city: loc[0].city,
-      state: loc[0].stateCode,
-      zipcode: loc[0].zipcode,
-      country: loc[0].countryCode,
-    };
-    this.address = undefined
-    next()
+// BootcampSchema.pre("save",async function(next){
+//     const loc = await geocoder.geocode(this.address)
+//     this.location = {
+//       type: {
+//         type: "Point",
+//       },
+//       coordinates: [loc[0].longitude, loc[0].latitude],
+//       formattedAddress: loc[0].formattedAddress,
+//       street: loc[0].streetName,
+//       city: loc[0].city,
+//       state: loc[0].stateCode,
+//       zipcode: loc[0].zipcode,
+//       country: loc[0].countryCode,
+//     };
+//     this.address = undefined
+//     next()
+// })
+
+// 3. Cascade Course after removing a bootcamp
+
+BootcampSchema.pre("remove", async function(next){
+    console.log(`Courses are being removed from ${this.name}`.red.bold);
+    await this.model("Course").deleteMany({
+        bootcamp:this._id
+    })
+    next();
 })
+
+// Reverse Populate with virtuals
+
+BootcampSchema.virtual("courses", {
+  ref: "Course",
+  localField: "_id",
+  foreignField: "bootcamp",
+  justOne: false,
+});
 export default mongoose.model("Bootcamp",BootcampSchema)
