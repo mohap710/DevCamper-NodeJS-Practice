@@ -1,7 +1,7 @@
 import { ErrorResponse } from "../utils/errorResponse.js";
 import { asyncHandler } from "../middlewares/asyncHandler.js";
 import { geocoder } from "../utils/geocoder.js";
-import Bootcamp from "../models/Bootcamps.js";
+import Bootcamp from "../models/Bootcamp.js";
 
 // @desc      Get all bootcamps
 // @route     GET /bootcamps
@@ -23,7 +23,10 @@ export const getBootcamps = asyncHandler(async (request, response, next) => {
   );
 
   // Find Resources
-  query = Bootcamp.find(JSON.parse(queryStr));
+  query = Bootcamp.find(JSON.parse(queryStr)).populate({
+    path:"courses",
+    select:"title"
+  });
 
   // Select Fields
   if(request.query.select){
@@ -65,7 +68,7 @@ export const getBootcamps = asyncHandler(async (request, response, next) => {
   const bootcamps = await query;
   response
     .status(200)
-    .json({ success: true, count: bootcamps.length, pagination , data: bootcamps });
+    .json({ success: true, count: total, pagination , data: bootcamps });
 });
 
 // @desc      Get all bootcamps with A given Radius
@@ -106,7 +109,7 @@ export const getBootcampsWithinRadius = asyncHandler(
 // @access    Public
 export const getSingleBootcamps = asyncHandler(
   async (request, response, next) => {
-    const bootcamp = await Bootcamp.findById(request.params.id);
+    const bootcamp = await Bootcamp.findById(request.params.id).populate("courses");
     if (!bootcamp) {
       return next(
         new ErrorResponse(
@@ -156,7 +159,7 @@ export const updateBootcamps = asyncHandler(async (request, response, next) => {
 // @route     DELETE /bootcamps
 // @access    Private
 export const deleteBootcamps = asyncHandler(async (request, response, next) => {
-  const bootcamp = await Bootcamp.findByIdAndDelete(request.params.id);
+  const bootcamp = await Bootcamp.findById(request.params.id);
   if (!bootcamp) {
     return next(
       new ErrorResponse(
@@ -165,6 +168,7 @@ export const deleteBootcamps = asyncHandler(async (request, response, next) => {
       )
     );
   }
+  bootcamp.remove();
   response.status(200).json({
     success: true,
     msg: `deleted bootcamp with id of ${request.params.id}`,
