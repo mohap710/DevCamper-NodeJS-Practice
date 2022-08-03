@@ -1,74 +1,22 @@
+import path from "path";
 import { ErrorResponse } from "../utils/errorResponse.js";
 import { asyncHandler } from "../middlewares/asyncHandler.js";
 import { geocoder } from "../utils/geocoder.js";
 import Bootcamp from "../models/Bootcamp.js";
+import { existsSync,mkdirSync } from "fs";
 
 // @desc      Get all bootcamps
 // @route     GET /bootcamps
 // @access    Public
 export const getBootcamps = asyncHandler(async (request, response, next) => {
-  let query;
-
-  // make copy of request.query
-  const reqQuery = { ...request.query }
-  // Params to exclude
-  const excludeParams = ["select","sort","limit","page"]
-  excludeParams.forEach(param => delete reqQuery[param])
-  
-  // create Mongoose Operators ( $gt|$gte|$lt|$lte|$in )
-  let queryStr = JSON.stringify(reqQuery);
-  queryStr = queryStr.replace(
-    /\b(gt|gte|lt|lte|in)\b/g,
-    (match) => `$${match}`
-  );
-
-  // Find Resources
-  query = Bootcamp.find(JSON.parse(queryStr)).populate({
-    path:"courses",
-    select:"title"
-  });
-
-  // Select Fields
-  if(request.query.select){
-    // transform Field from comma seprated to space seprated
-    // e.g: name,desc,created => name desc created
-    let fields = request.query.select.split(",").join(" ")
-    query = query.select(fields)
+  try {
+    response.status(200).json(response.queryResult);
+    
+  } catch (error) {
+    next(
+      new ErrorResponse(500,error)
+    )
   }
-
-  // Sort By field or Default Sort by createdAt
-  if(request.query.sort){
-    let sortBy = request.query.sort.split(",").join(" ");
-    query = query.sort(sortBy)
-  } else{
-    query = query.sort("-createdAt");
-  }
-
-  // Pagination
-  const page = parseInt(request.query.page, 10) || 1;
-  const limit = parseInt(request.query.limit, 10) || 10;
-  const firstIndex = (page - 1) * limit
-  let lastIndex = page * limit
-  const total = await Bootcamp.countDocuments()
-
-  query = query.skip(firstIndex).limit(limit);
-  const pagination = {}
-  if(lastIndex > total){
-    lastIndex = total
-  }
-  pagination.perPage = `Showing Data from ${firstIndex+1} to ${lastIndex}`
-  if(firstIndex > 0){
-    pagination.prevPage = page - 1 
-  }
-  if(lastIndex < total){
-    pagination.nextPage = page + 1 
-  }
-
-
-  const bootcamps = await query;
-  response
-    .status(200)
-    .json({ success: true, count: total, pagination , data: bootcamps });
 });
 
 // @desc      Get all bootcamps with A given Radius
@@ -154,6 +102,71 @@ export const updateBootcamps = asyncHandler(async (request, response, next) => {
   }
   response.status(200).json({ success: true, data: bootcamp });
 });
+
+// @desc      DELETE A bootcamp
+// @route     DELETE /bootcamps
+// @access    Private
+export const uploadBootcampPhoto = asyncHandler(async (request, response, next) => {
+  const bootcamp = await Bootcamp.findById(request.params.id);
+  if (!bootcamp) {
+    return next(
+      new ErrorResponse(
+        404,
+        `Bootcamp with the id of ${request.params.id} Not found`
+      )
+    );
+  }
+
+  if(!request.files){
+    return next(
+      new ErrorResponse(400,"Please Upload a file")
+    )
+  }
+  // check if it's a valid image
+  const file = request.files.file
+  if(!file.mimetype.startsWith("image")){
+    return next(
+      new ErrorResponse(400,"Please Upload a photo")
+    )
+  }
+  // check the size
+  if(file.size > process.env.MAX_FILE_SIZE){
+    return next(
+      new ErrorResponse(
+        400,
+        `file must be less than ${process.env.MAX_FILE_SIZE} Byte`
+      )
+    );
+  }
+
+  // create a custom filename
+  file.name = `photo_${bootcamp._id}${path.parse(file.name).ext}`;
+  
+  const uploadFolder = `${process.env.FILE_UPLOAD_PATH}/bootcamps`
+  // if folder doesn't exists then create it
+
+  if(!existsSync(uploadFolder)){
+    mkdirSync(uploadFolder)
+  }
+  file.mv(`${uploadFolder}/${file.name}`,async err => {
+    if(err){
+      console.error(err);
+      return (
+        next(
+          new ErrorResponse(500,"We Could not upload your file")
+        )
+      )
+    }
+
+    await Bootcamp.findByIdAndUpdate(request.params.id,{photo:file.name})
+
+    response.status(200).json({
+      success:true,
+      msg:"file Uploaded Successfully"
+    })
+  });
+});
+
 
 // @desc      DELETE A bootcamp
 // @route     DELETE /bootcamps
