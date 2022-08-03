@@ -5,9 +5,13 @@ import {
     getBootcampsWithinRadius,
     createNewBootcamps,
     deleteBootcamps,
-    updateBootcamps
+    updateBootcamps,
+    uploadBootcampPhoto
 }
     from '../controllers/bootcamps.js';
+// Advanced Query Middleware
+import Bootcamp from '../models/Bootcamp.js';
+import { advancedQuery } from '../middlewares/advancedQuery.js';
 
 // Include other resources Routers
 import coursesRouter from "./courses.js";
@@ -19,10 +23,12 @@ router.use("/:bootcampId/courses", coursesRouter);
 
 // Bootcamps Routes
 router.route('/')
-    .get(getBootcamps)
+    .get(advancedQuery(Bootcamp,"courses"),getBootcamps)
     .post(createNewBootcamps)
 
 router.route("/radius/:zipcode/:distance").get(getBootcampsWithinRadius)
+
+router.route("/:id/photo").put(uploadBootcampPhoto)
 
 router.route('/:id')
     .get(getSingleBootcamps)

@@ -8,9 +8,23 @@ import {
 }
     from '../controllers/courses.js'
 
+// Advanced query Middleware
+import Course from '../models/Course.js';
+import { advancedQuery } from '../middlewares/advancedQuery.js';
+
 const router = express.Router({ mergeParams:true })
 
-router.route("/").get(getCourses).post(createNewCourse);
+router
+  .route("/")
+  .get(
+    advancedQuery(Course,
+    {
+      path: "bootcamp",
+      select: "name description",
+    }),
+    getCourses
+  )
+  .post(createNewCourse);
 
 router
   .route("/:id")
