@@ -1,17 +1,30 @@
-import express from 'express'
-import dotEnv from 'dotenv'
-import connectToDB  from './config/db.js'
-import bootcampRoutes from './routes/bootcamps.js'
-import courseRoutes from './routes/courses.js'
-import { errorHandler } from './middlewares/errorHandler.js'
+import express from "express";
+import dotEnv from "dotenv";
+import connectToDB  from "./config/db.js";
+import fileUpload from "express-fileupload";
 
-dotEnv.config({ path: './config/config.env' })
+// Routes
+import bootcampRoutes from "./routes/bootcamps.js";
+import courseRoutes from "./routes/courses.js";
+// Middlewares
+import { errorHandler } from "./middlewares/errorHandler.js";
+
+// dirname in ES Module
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotEnv.config({ path: "./config/config.env" })
 connectToDB();
 const app = express()
 
 // Middlewares
 app
 .use(express.json())
+.use(fileUpload())
+.use(express.static(path.join(__dirname,"/public")))
 
 
 
