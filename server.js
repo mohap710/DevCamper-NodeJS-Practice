@@ -2,10 +2,12 @@ import express from "express";
 import dotEnv from "dotenv";
 import connectToDB  from "./config/db.js";
 import fileUpload from "express-fileupload";
-
+import cookieParser from "cookie-parser";
 // Routes
 import bootcampRoutes from "./routes/bootcamps.js";
 import courseRoutes from "./routes/courses.js";
+import authRoutes from "./routes/auth.js";
+
 // Middlewares
 import { errorHandler } from "./middlewares/errorHandler.js";
 
@@ -24,6 +26,7 @@ const app = express()
 app
 .use(express.json())
 .use(fileUpload())
+.use(cookieParser())
 .use(express.static(path.join(__dirname,"/public")))
 
 
@@ -34,5 +37,6 @@ const port = process.env.PORT || 5000
 
 app.use("/bootcamps", bootcampRoutes).use(errorHandler);
 app.use("/courses", courseRoutes).use(errorHandler);
+app.use("/auth", authRoutes).use(errorHandler);
 
 app.listen(port, () => console.log(`Server running in ${process.env.NODE_ENV} mode and listening on port ${port}!`.bgGreen.black.bold))
