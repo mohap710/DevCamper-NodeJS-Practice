@@ -1,5 +1,5 @@
 {
-  "name": "node.js",
+  "name": "DevCamper",
   "version": "1.0.0",
   "description": "DevCamper Backend APIs",
   "main": "server.js",
@@ -12,10 +12,12 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "colors": "^1.4.0",
     "dotenv": "^10.0.0",
     "express": "^4.17.2",
     "express-fileupload": "^1.4.0",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.1.4",
     "node-geocoder": "^4.2.0",
     "slugify": "^1.6.5"
