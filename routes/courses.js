@@ -8,9 +8,10 @@ import {
 }
     from '../controllers/courses.js'
 
-// Advanced query Middleware
 import Course from '../models/Course.js';
+// Middlewares
 import { advancedQuery } from '../middlewares/advancedQuery.js';
+import { protect,authorize } from "../middlewares/auth.js"
 
 const router = express.Router({ mergeParams:true })
 
@@ -24,13 +25,13 @@ router
     }),
     getCourses
   )
-  .post(createNewCourse);
+  .post(protect, authorize("publisher","admin"), createNewCourse);
 
 router
   .route("/:id")
   .get(getSingleCourse)
-  .put(updateCourse)
-  .delete(deleteCourse);  
+  .put(protect, authorize("publisher","admin"), updateCourse)
+  .delete(protect, authorize("publisher","admin"), deleteCourse);  
 
 
 
