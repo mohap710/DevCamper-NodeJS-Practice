@@ -46,6 +46,18 @@ export const login = asyncHandler(async (request, response, next) => {
     sendTokenResponse(user,200,response);
 });
 
+// @desc      Logged in user Profile
+// @route     GET /auth/me
+// @access    Protected
+export const getMe = asyncHandler(async (request, response, next) => {
+    const user = await User.findById(request.user.id);
+
+    response.status(200).json({
+        success:true,
+        user
+    })
+});
+
 // Get token from model , create cookie , and send response
 const sendTokenResponse = (user, statusCode, response)=>{
     const token = user.signJWT();
