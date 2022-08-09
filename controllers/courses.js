@@ -50,9 +50,11 @@ export const createNewCourse = asyncHandler(
   async (request, response, next) => {
     // set the bootcamp for the course from Params
     request.body.bootcamp = request.params.bootcampId;
+    request.body.user = request.user.id;
+
     const bootcamp = await Bootcamp.findById(request.params.bootcampId);
-    
-    if(!bootcamp){
+
+    if (!bootcamp) {
       return next(
         new ErrorResponse(
           404,
@@ -60,7 +62,16 @@ export const createNewCourse = asyncHandler(
         )
       );
     }
-
+    // Authorize user OwnerShip to Bootcamp
+    const ownerId = bootcamp.user.toString();
+    if (ownerId !== request.user.id && request.user.role !== "admin") {
+      return next(
+        new ErrorResponse(
+          401,
+          "You are not Authorized to Add Courses this Bootcamp."
+        )
+      );
+    }
     const course = await Course.create(request.body);
     response.status(201).json({ success: true, data: course });
   }
@@ -70,14 +81,7 @@ export const createNewCourse = asyncHandler(
 // @route     PUT /courses/:id
 // @access    Private
 export const updateCourse = asyncHandler(async (request, response, next) => {
-  const course = await Course.findByIdAndUpdate(
-    request.params.id,
-    request.body,
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
+  let course = await Course.findById(request.params.id);
   if (!course) {
     return next(
       new ErrorResponse(
@@ -86,6 +90,22 @@ export const updateCourse = asyncHandler(async (request, response, next) => {
       )
     );
   }
+
+  // Authorize user OwnerShip to Bootcamp
+  const ownerId = course.user.toString();
+  if (ownerId !== request.user.id && request.user.role !== "admin") {
+    return next(
+      new ErrorResponse(401, "You are not Authorized to Update this Course.")
+    );
+  }
+   course = await Course.findByIdAndUpdate(
+    request.params.id,
+    request.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
   response.status(200).json({ success: true, data: course });
 });
 
@@ -100,6 +120,13 @@ export const deleteCourse = asyncHandler(async (request, response, next) => {
         404,
         `Course with the id of ${request.params.id} Not found`
       )
+    );
+  }
+  // Authorize user OwnerShip to Bootcamp
+  const ownerId = course.user.toString();
+  if (ownerId !== request.user.id && request.user.role !== "admin") {
+    return next(
+      new ErrorResponse(401, "You are not Authorized to Delete this Course.")
     );
   }
   response.status(200).json({
