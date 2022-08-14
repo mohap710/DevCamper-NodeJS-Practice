@@ -9,6 +9,7 @@ import bootcampRoutes from "./routes/bootcamps.js";
 import courseRoutes from "./routes/courses.js";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/users.js"
+import reviewRoutes from "./routes/reviews.js"
 
 // Middlewares
 import { errorHandler } from "./middlewares/errorHandler.js";
@@ -41,5 +42,6 @@ app.use("/bootcamps", bootcampRoutes).use(errorHandler);
 app.use("/courses", courseRoutes).use(errorHandler);
 app.use("/auth", authRoutes).use(errorHandler);
 app.use("/users", userRoutes).use(errorHandler);
+app.use("/reviews", reviewRoutes).use(errorHandler);
 
 app.listen(port, () => console.log(`Server running in ${process.env.NODE_ENV} mode and listening on port ${port}!`.bgGreen.black.bold))
