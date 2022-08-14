@@ -10,7 +10,9 @@ export const errorHandler = (err, req, res, next) => {
   }
   // Duplicate Value Entered 
   if(err.code == 11000){
-    const message = `Duplicate value has been entered`;
+    const message = `Duplicate value has been entered in ${
+      Object.keys(err.keyPattern)
+    }`;
     error = new ErrorResponse(400, message);
   }
  // Mongoose Validation Error   
