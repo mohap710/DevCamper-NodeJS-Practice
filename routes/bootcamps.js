@@ -15,11 +15,13 @@ import { protect,authorize } from "../middlewares/auth.js"
 
 // Include other resources Routers
 import coursesRouter from "./courses.js";
+import reviewsRouter from "./reviews.js";
 
 const router = express.Router();
 
 // Re-route to other resources
 router.use("/:bootcampId/courses", coursesRouter);
+router.use("/:bootcampId/reviews", reviewsRouter);
 
 // Bootcamps Routes
 router
