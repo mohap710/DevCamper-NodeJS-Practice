@@ -59,7 +59,7 @@ export const advancedQuery = (model, populate) => async (request, response, next
 
   response.queryResult = {
     success: true,
-    count: total,
+    count: result.length,
     pagination,
     data: result,
   };
