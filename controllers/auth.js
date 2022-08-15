@@ -18,6 +18,7 @@ export const register = asyncHandler(async (request, response, next) => {
 
   sendTokenResponse(user, 200, response);
 });
+
 // @desc      Log a user In
 // @route     POST /auth/login
 // @access    Public
@@ -41,6 +42,21 @@ export const login = asyncHandler(async (request, response, next) => {
   }
 
   sendTokenResponse(user, 200, response);
+});
+
+// @desc      Log a user out / clear cookie
+// @route     GET /auth/logout
+// @access    Public
+export const logout = asyncHandler(async (request, response, next) => {
+    response.cookie("token","none",{
+      expires:new Date(Date.now() + 10 * 1000),
+      httpOnly:true
+    })
+    
+    response.status(200).json({
+      success: true,
+    });
+    
 });
 
 // @desc      Logged in user Profile
