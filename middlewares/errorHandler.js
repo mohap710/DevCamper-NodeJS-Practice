@@ -5,7 +5,7 @@ export const errorHandler = (err, req, res, next) => {
   error.message = err.message
   // Mongoose bad ObjectId
   if(err.name === "CastError"){
-    const message = `Resource with the id of ${err.value} Not found`;
+    const message = `Resource Not found`;
     error = new ErrorResponse(404,message);
   }
   // Duplicate Value Entered 
