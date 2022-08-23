@@ -69,5 +69,5 @@ app.use("/auth", authRoutes).use(errorHandler);
 app.use("/users", userRoutes).use(errorHandler);
 app.use("/reviews", reviewRoutes).use(errorHandler);
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 7001;
 app.listen(port, () => console.log(`Server running in ${process.env.NODE_ENV} mode and listening on port ${port}!`.bgGreen.black.bold))
